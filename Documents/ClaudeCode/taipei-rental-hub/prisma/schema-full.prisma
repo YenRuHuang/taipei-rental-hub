@@ -1,0 +1,239 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 使用者模型
+model User {
+  id              String          @id @default(cuid())
+  email           String          @unique
+  password        String
+  name            String?
+  phone           String?
+  emailVerified   Boolean         @default(false)
+  isActive        Boolean         @default(true)
+  role            UserRole        @default(USER)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  favorites       Favorite[]
+  searchAlerts    SearchAlert[]
+  searchHistories SearchHistory[]
+  notifications   Notification[]
+}
+
+// 物件模型
+model Property {
+  id              String          @id @default(cuid())
+  sourceId        String          // 原始平台的ID
+  source          PropertySource  // 來源平台
+  title           String
+  description     String?         @db.Text
+  price           Int             // 月租金
+  deposit         String?         // 押金說明
+  
+  // 位置資訊
+  district        String          // 區域（大安區、信義區等）
+  address         String
+  nearMRT         String?         // 最近捷運站
+  latitude        Float?
+  longitude       Float?
+  
+  // 房屋資訊
+  area            Float?          // 坪數
+  roomType        String          // 套房、1房、2房等
+  floor           String?         // 樓層
+  totalFloors     String?         // 總樓層
+  
+  // 設施
+  hasParking      Boolean         @default(false)
+  hasPet          Boolean         @default(false)
+  hasCooking      Boolean         @default(false)
+  hasElevator     Boolean         @default(false)
+  hasBalcony      Boolean         @default(false)
+  hasWasher       Boolean         @default(false)
+  
+  // 聯絡資訊
+  contactName     String?
+  contactPhone    String?
+  contactLine     String?
+  
+  // 系統資訊
+  url             String          // 原始連結
+  isActive        Boolean         @default(true)
+  viewCount       Int             @default(0)
+  firstSeenAt     DateTime        @default(now())
+  lastSeenAt      DateTime        @default(now())
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  images          PropertyImage[]
+  features        PropertyFeature[]
+  priceHistory    PriceHistory[]
+  favorites       Favorite[]
+  
+  @@unique([source, sourceId])
+  @@index([district, price])
+  @@index([price])
+  @@index([createdAt])
+}
+
+// 物件圖片
+model PropertyImage {
+  id          String    @id @default(cuid())
+  propertyId  String
+  url         String
+  type        ImageType @default(PHOTO)
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  
+  property    Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId])
+}
+
+// 物件特色標籤
+model PropertyFeature {
+  id          String   @id @default(cuid())
+  propertyId  String
+  feature     String   // 特色描述
+  category    String?  // 分類（設備、交通、生活機能等）
+  
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId])
+}
+
+// 價格歷史
+model PriceHistory {
+  id          String   @id @default(cuid())
+  propertyId  String
+  price       Int
+  recordedAt  DateTime @default(now())
+  
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@index([propertyId, recordedAt])
+}
+
+// 使用者收藏
+model Favorite {
+  id          String   @id @default(cuid())
+  userId      String
+  propertyId  String
+  note        String?  @db.Text
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+// 搜尋提醒
+model SearchAlert {
+  id              String          @id @default(cuid())
+  userId          String
+  name            String
+  criteria        Json            // 搜尋條件
+  isActive        Boolean         @default(true)
+  notifyEmail     Boolean         @default(true)
+  notifyLine      Boolean         @default(false)
+  lastNotified    DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+// 搜尋歷史
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String?
+  query       String?  // 自然語言查詢
+  criteria    Json     // 結構化搜尋條件
+  resultCount Int      @default(0)
+  createdAt   DateTime @default(now())
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// 通知記錄
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  type        NotificationType
+  title       String
+  content     String           @db.Text
+  data        Json?            // 相關資料
+  isRead      Boolean          @default(false)
+  readAt      DateTime?
+  createdAt   DateTime         @default(now())
+  
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+// 爬蟲執行記錄
+model CrawlerLog {
+  id              String         @id @default(cuid())
+  source          PropertySource
+  status          CrawlerStatus
+  totalFound      Int            @default(0)
+  newProperties   Int            @default(0)
+  updatedProperties Int          @default(0)
+  errorMessage    String?        @db.Text
+  startedAt       DateTime       @default(now())
+  completedAt     DateTime?
+  
+  @@index([source, startedAt])
+}
+
+// 枚舉類型
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum PropertySource {
+  RENTAL591
+  RAKUYA
+  HOUSEFUN
+  FACEBOOK
+  OTHER
+}
+
+enum ImageType {
+  PHOTO
+  FLOORPLAN
+  VR360
+}
+
+enum NotificationType {
+  NEW_PROPERTY
+  PRICE_CHANGE
+  ALERT_MATCH
+  SYSTEM
+}
+
+enum CrawlerStatus {
+  RUNNING
+  COMPLETED
+  FAILED
+}

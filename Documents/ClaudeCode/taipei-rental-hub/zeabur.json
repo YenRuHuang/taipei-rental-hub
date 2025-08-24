@@ -1,0 +1,56 @@
+{
+  "name": "taipei-rental-hub",
+  "description": "台北租屋整合平台 - AI 驅動的智能租屋資訊聚合系統",
+  "framework": "node.js",
+  "buildCommand": "npm install && npm run db:generate",
+  "startCommand": "npm start",
+  "port": 3000,
+  "environment": {
+    "NODE_ENV": "production",
+    "PORT": "3000",
+    "DATABASE_URL": "${DATABASE_URL}",
+    "REDIS_URL": "${REDIS_URL}",
+    "ANTHROPIC_API_KEY": "${ANTHROPIC_API_KEY}",
+    "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
+    "GOOGLE_MAPS_API_KEY": "${GOOGLE_MAPS_API_KEY}",
+    "CRAWLER_INTERVAL": "60"
+  },
+  "domains": [],
+  "features": {
+    "healthCheck": {
+      "enabled": true,
+      "path": "/health",
+      "interval": 30
+    },
+    "autoScale": {
+      "enabled": true,
+      "minInstances": 1,
+      "maxInstances": 3
+    },
+    "cdn": {
+      "enabled": true,
+      "cache": ["*.css", "*.js", "*.png", "*.jpg", "*.ico", "*.svg"]
+    }
+  },
+  "resources": {
+    "memory": "1GB",
+    "cpu": "1",
+    "storage": "2GB"
+  },
+  "services": {
+    "postgres": {
+      "plan": "hobby"
+    },
+    "redis": {
+      "plan": "hobby"
+    }
+  },
+  "backup": {
+    "enabled": true,
+    "schedule": "0 2 * * *"
+  },
+  "logs": {
+    "retention": "7d",
+    "level": "info"
+  }
+}
