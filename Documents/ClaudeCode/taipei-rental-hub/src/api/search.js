@@ -5,8 +5,66 @@ import axios from "axios";
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// 通過 Mursfoto API Gateway 解析查詢
+async function parseViaAPIGateway(query) {
+  try {
+    const response = await axios.post(
+      `${process.env.MURSFOTO_API_GATEWAY_URL}/api/proxy/claude/messages`,
+      {
+        model: "claude-3-sonnet-20240229",
+        max_tokens: 1000,
+        messages: [
+          {
+            role: "user",
+            content: `請將以下租屋需求轉換為結構化的搜尋條件。請以JSON格式回應，包含以下欄位：
+- district: 區域名稱（如：大安區、信義區等）
+- minPrice: 最低價格
+- maxPrice: 最高價格  
+- minArea: 最低坪數
+- maxArea: 最高坪數
+- roomType: 房型（套房、1房、2房等）
+- nearMRT: 捷運站名稱
+- hasParking: 需要停車位（true/false）
+- hasPet: 可養寵物（true/false）
+- hasCooking: 可開伙（true/false）
+
+用戶查詢: "${query}"
+
+只回應JSON格式，不要其他說明文字。`
+          }
+        ]
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.API_GATEWAY_TOKEN}`
+        }
+      }
+    );
+
+    const aiResponse = response.data.content[0].text;
+    const parsed = JSON.parse(aiResponse);
+    
+    return {
+      criteria: parsed,
+      explanation: `已解析查詢: ${query}`
+    };
+    
+  } catch (error) {
+    console.error("API Gateway parsing error:", error);
+    throw new Error("Failed to parse via API Gateway");
+  }
+}
+
 // AI 自然語言搜尋解析器
 async function parseNaturalLanguageQuery(query) {
+  // 檢查是否使用 API Gateway
+  const useGateway = process.env.MURSFOTO_API_GATEWAY_URL;
+  
+  if (useGateway) {
+    return await parseViaAPIGateway(query);
+  }
+  
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error("Anthropic API key not configured");
   }
