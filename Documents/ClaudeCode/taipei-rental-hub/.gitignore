@@ -43,3 +43,9 @@ logs
 
 # Prisma
 prisma/dev.db*
+
+# Parent directories and unrelated files
+../../../*
+../../*
+../*
+!../taipei-rental-hub/
