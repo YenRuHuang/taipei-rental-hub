@@ -68,12 +68,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check
+// Basic health check (no database dependency)
+app.get("/ping", (req, res) => {
+  res.json({ 
+    status: "ok", 
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Detailed health check
 app.get("/health", async (req, res) => {
   const health = {
     status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development",
     database: "disconnected"
   };
 
@@ -84,6 +93,7 @@ app.get("/health", async (req, res) => {
       health.database = "connected";
     } catch (error) {
       health.database = "error: " + error.message;
+      health.status = "degraded";
     }
   }
 
@@ -158,6 +168,12 @@ const server = app.listen(PORT, async () => {
   logger.info(`🚀 Server is running on port ${PORT}`);
   logger.info(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
   logger.info(`🌐 Health check: http://localhost:${PORT}/health`);
+  logger.info(`📋 Basic ping: http://localhost:${PORT}/ping`);
+  
+  // Log environment variables (safely)
+  logger.info(`🔗 DATABASE_URL configured: ${process.env.DATABASE_URL ? 'Yes' : 'No'}`);
+  logger.info(`🔗 REDIS_URL configured: ${process.env.REDIS_URL ? 'Yes' : 'No'}`);
+  logger.info(`🔗 API Gateway configured: ${process.env.MURSFOTO_API_GATEWAY_URL ? 'Yes' : 'No'}`);
   
   // Test database connection
   await testDatabaseConnection();
