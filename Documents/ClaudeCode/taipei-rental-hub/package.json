@@ -18,7 +18,6 @@
     "db:seed": "node src/database/seed.js",
     "build": "npm run db:generate && cd frontend && npm run build",
     "start": "node start-production.js",
-    "start:production": "node start-production.js",
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "keywords": [

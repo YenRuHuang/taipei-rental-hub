@@ -40,4 +40,5 @@ crawler.on('error', (err) => {
   // 爬蟲失敗不影響主服務
 });
 
-console.log('✅ Production server started on port', process.env.PORT || 3000);
+const port = process.env.PORT || 8080;
+console.log(`✅ Production server started on port ${port}`);
