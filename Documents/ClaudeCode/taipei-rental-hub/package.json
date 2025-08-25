@@ -17,7 +17,6 @@
     "db:generate": "prisma generate",
     "db:seed": "node src/database/seed.js",
     "build": "npm run db:generate && cd frontend && npm run build",
-    "start": "node src/backend/server.js",
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "keywords": [
@@ -56,5 +55,11 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "mursfoto": {
+    "service": "taipei-rental-hub",
+    "type": "api",
+    "port": 4000,
+    "setupAt": "2025-08-25T03:15:27.915Z"
   }
 }
