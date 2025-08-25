@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台北租屋整合平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 800px;
+        }
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 3rem 0;
+        }
+        .feature {
+            background: rgba(255,255,255,0.1);
+            padding: 1.5rem;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .feature h3 {
+            margin-bottom: 0.5rem;
+        }
+        .api-links {
+            margin-top: 2rem;
+        }
+        .api-links a {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 0.8rem 1.5rem;
+            margin: 0.5rem;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+        .api-links a:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(0,255,0,0.2);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏠 台北租屋整合平台</h1>
+        <p class="subtitle">AI 驅動的智能租屋資訊系統</p>
+        
+        <div class="status">
+            ✅ 系統運行中 | 🤖 AI 爬蟲啟動 | 📊 數據庫連接正常
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🔍 智能搜尋</h3>
+                <p>自然語言理解您的需求</p>
+            </div>
+            <div class="feature">
+                <h3>🤖 AI 爬蟲</h3>
+                <p>自動抓取多平台房源</p>
+            </div>
+            <div class="feature">
+                <h3>📊 即時分析</h3>
+                <p>市場趨勢與價格統計</p>
+            </div>
+            <div class="feature">
+                <h3>💡 個人推薦</h3>
+                <p>基於偏好的智能推薦</p>
+            </div>
+        </div>
+        
+        <div class="api-links">
+            <h2>API 端點</h2>
+            <a href="/health">健康檢查</a>
+            <a href="/api/properties">房源列表</a>
+            <a href="/api/properties/stats">統計數據</a>
+        </div>
+        
+        <p style="margin-top: 3rem; opacity: 0.7;">
+            Powered by Mursfoto API Gateway × Claude AI × Zeabur
+        </p>
+    </div>
+    
+    <script>
+        // 測試 API 連接
+        fetch('/health')
+            .then(res => res.json())
+            .then(data => console.log('Health check:', data))
+            .catch(err => console.error('Health check failed:', err));
+    </script>
+</body>
+</html>

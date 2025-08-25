@@ -78,6 +78,9 @@ app.use("/api/crawler", crawlerRoutes);
 // Static files for uploaded images
 app.use("/uploads", express.static("uploads"));
 
+// Static files for frontend (public folder)
+app.use(express.static("public"));
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({
