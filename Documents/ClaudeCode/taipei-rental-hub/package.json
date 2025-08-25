@@ -17,7 +17,7 @@
     "db:generate": "prisma generate",
     "db:seed": "node src/database/seed.js",
     "build": "npm run db:generate && cd frontend && npm run build",
-    "start": "node start-production.js",
+    "start": "node src/backend/server.js",
     "db:migrate:deploy": "prisma migrate deploy"
   },
   "keywords": [

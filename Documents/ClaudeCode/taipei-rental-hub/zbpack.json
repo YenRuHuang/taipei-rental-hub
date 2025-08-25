@@ -1,0 +1,6 @@
+{
+  "build_command": "npm install && npm run db:generate",
+  "start_command": "node start-production.js",
+  "install_command": "npm install",
+  "node_version": "18"
+}
