@@ -14,8 +14,15 @@ import crawlerRoutes from "../api/crawler.js";
 dotenv.config();
 
 const app = express();
-const prisma = new PrismaClient();
 const PORT = process.env.PORT || 8080;
+
+// Initialize Prisma with error handling
+let prisma;
+try {
+  prisma = new PrismaClient();
+} catch (error) {
+  console.error('Failed to initialize Prisma:', error);
+}
 
 // Logger setup
 const logger = winston.createLogger({
@@ -62,12 +69,25 @@ app.use((req, res, next) => {
 });
 
 // Health check
-app.get("/health", (req, res) => {
-  res.json({
+app.get("/health", async (req, res) => {
+  const health = {
     status: "healthy",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-  });
+    database: "disconnected"
+  };
+
+  // Test database connection
+  if (prisma) {
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      health.database = "connected";
+    } catch (error) {
+      health.database = "error: " + error.message;
+    }
+  }
+
+  res.json(health);
 });
 
 // API Routes
@@ -102,21 +122,51 @@ app.use((err, req, res, next) => {
 // Graceful shutdown
 process.on("SIGTERM", async () => {
   logger.info("SIGTERM signal received: closing HTTP server");
-  await prisma.$disconnect();
+  if (prisma) {
+    await prisma.$disconnect();
+  }
   process.exit(0);
 });
 
 process.on("SIGINT", async () => {
   logger.info("SIGINT signal received: closing HTTP server");
-  await prisma.$disconnect();
+  if (prisma) {
+    await prisma.$disconnect();
+  }
   process.exit(0);
 });
 
+// Test database connection
+async function testDatabaseConnection() {
+  if (prisma) {
+    try {
+      await prisma.$connect();
+      logger.info("✅ Database connection successful");
+      return true;
+    } catch (error) {
+      logger.error("❌ Database connection failed:", error.message);
+      return false;
+    }
+  } else {
+    logger.warn("⚠️  Database not initialized");
+    return false;
+  }
+}
+
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
   logger.info(`🚀 Server is running on port ${PORT}`);
   logger.info(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
   logger.info(`🌐 Health check: http://localhost:${PORT}/health`);
+  
+  // Test database connection
+  await testDatabaseConnection();
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  logger.error('Server error:', error);
+  process.exit(1);
 });
 
 export default app;
